@@ -24,7 +24,7 @@
     - flac
 #### 封装
 封装格式(格式头)|视频编码帧|音频编码帧
-:-:|:--:|---:|---:|---:
+:-:|:--:|:--:|
 mp4(Part14)flv mov avi<br>box音视频信息(编码和格式关键帧索引)| h264 mepg-4-10<br>NAL VCL<br>SPS PPS<br>I B P  | AAC<br>APE、FLAC无损压缩<br>PCM原始音频
 *解码*|解码为YUV|解码为PCM FLT
 *重采样*|转为RGB显示|转为声卡支持的S16播放
@@ -79,6 +79,44 @@ mp4(Part14)flv mov avi<br>box音视频信息(编码和格式关键帧索引)| h2
 - int channels; ->声道数
 - int sample_rate; ->音频样本率
 - int frame_size; ->一帧音频大小
+#### AVPacket
+- AVBufferRef* buf; ->引用计数
+- int64_t pts; ->pts * (num / den)
+- int64_t dts; ->
+- uint8_t* data; ->具体数据
+- int size; ->大小
+- 接口函数
+  - AVPacket* av_packet_alloc(void); ->创建并初始化一个AVPacket对象
+  - AVPacket* av_packet_clone(const AVPAcket* src); ->创建拷贝对象，并增加引用计数
+  - int av_packet_ref(AVPacket* dst,const AVPacket* src); ->给目标AVPacket增加引用计数
+  - void av_packet_unref(AVPacket* pkt); ->减少引用计数
+  - void av_packet_free(AVPacket** pkt); ->清空对象并减少引用计数
+  - void av_init_packet(AVPacket* pkt); ->初始化手工创建的对象
+  - int av_packet_from_data(AVPacket* pkt,uint8_t* data,int size); ->传入参数手工创建对象
+#### AVCodecContext
+- int thread_count; ->解码器线程数量
+- AVRational time_base; ->时间基数
+- 接口函数
+    1. AVCodecContext* avcodec_alloc_context3(const AVCodec* codec); ->创建一个AVCodecContext对象上下文
+    2. int avcodec_open2(AVCodecContext* avctx,const AVCodec* codec,AVDictionary** options); ->打开AVCodecContext
+    - void avcodec_free_context(AVCodecContext** avctx); ->清理AVCodecContext上下文
+#### AVFrame
+- uint8_t* data[AV_NUM_DATA_POINTERS]; ->数据区
+- int linesize[AV_NUM_DATA_POINTERS]; ->每行大小 对视频是一行数据的大小，对音频是一个通道的大小
+- int width,height; ->视频宽高
+- int nb_samples; ->音频单通道样本数量
+- int64_t pts; ->显示时间
+- int64_t pkt_dts; ->AVPacket的解码时间
+- int sample_rate; ->音频样本率
+- uint64_t channel_layout; ->音频通道类型
+- int channels; ->音频通道数量
+- int format; ->AVPixelFormat AVSampleFormat 像素格式
+- 接口函数
+  - AVFrame* frame = av_frame_alloc(); ->创建一个AVFrame上下文
+  - void av_frame_free(AVFrame** frame); ->释放AVFrame上下文空间
+  - int av_frame_ref(AVFrame* dst,const AVFrame* src); ->对目标上下文引用计数加一
+  - AVFrame* av_frame_clone(const AVFrame* src); ->拷贝源上下文
+  - void av_frame_unref(AVFrame* frame); ->引用计数减一
 ### 解封装
 1. 打开接口函数
    - av_register_all() ->注册所有的封装格式(已经弃用，不需要再做相关操作)
@@ -92,14 +130,43 @@ mp4(Part14)flv mov avi<br>box音视频信息(编码和格式关键帧索引)| h2
 5. 读取帧信息
     - av_read_frame(...)
 #### 解封装接口函数解析
-##### int avformat_open_input( AVFormatContext** ps,const char* url,AVInputFormat* fmt,AVDictionary** options)
+##### int avformat_open_input( AVFormatContext** ps,const char* url,AVInputFormat* fmt,AVDictionary** options) ->打开输入流
 - 确保av_register_all 或者 avformat_network_init已调用
 - AVFormatContext** ps ->格式化上下文，一般传一个指针的地址，函数内部会在该指针指向的地址处生成所需要的空间。也可以传外部构建好的对象，但是会带来内存相关的问题。原则上库的内存和外部调用空间的内存应该相互独立，互不干扰。
 - const char* url ->网络连接地址，支持http和rtsp，也支持本地文件。
 - AVInputFormat* fmt ->指定输入的封装格式。
 - AVDictionary** options ->字典数组，传递参数选择。
+#### int av_read_frame(AVFormatContext* s,AVPacket* pkt) ->读取帧
+- AVFormatContext* s ->上下文
+- AVPacket* pkt ->存放压缩的数据
+#### int av_seek_frame(AVFormatContext* s,int stream_index,int64_t timestamp,int flags) ->寻找帧
+- AVFormatContext* s ->上下文
+- int stream_index ->流计数 default -1
+- int64_t timestamp ->时间戳
+- int flags ->标志
+  - AVSEEK_FLAG_BACKWARD 1 // < 向后查找
+  - AVSEEK_FLAG_BYTE 2 //基于字节位寻找
+  - AVSEEK_FLAG_ANY 4 //寻找任意帧,可能不是关键帧
+  - AVSEEK_FLAG_FRAME 8 //基于帧的排序数寻找
 ### 软硬件解码
+1. 注册解码器 ->已经过时，并不需要再注册所有解码器
+   - avcodec_register_all()
+2. 根据id号或者名称找到解码器
+    - AVCodec* avcodec_find_decoder(enum AVCodecID id);
+    - AVCodec* avcodec_decoder_by_name(const char* name);
+#### 软硬件解码函数解析
+##### int avcodec_send_packet(AVCodecContext* avctx,const AVPacket* avpkt); ->传递压缩数据给解码器进行解码 将AVPacket放到解码队列中去
+- AVCodecContext* avctx; ->解码器上下文
+- const AVPacket* avpkt; ->数据包上下文
+##### int avcodec_receive_frame(AVCodecContext* avctx,AVFrame* frame); ->从已解码队列中取出一个AVFrame 立即返回 可能会收到多个解码帧
+- AVCodecContext* avctx; ->解码器上下文
+- AVFrame* frame; ->解码之后的帧
 ### 像素格式转换
+- sws_getContext; ->格式转换上下文 创建一个新的上下文
+- struct SwsContext* sws_getCachedContext(struct SwsContext* context,int srcW,int srcH,enum AVPixelFormat srcFormat,int dstW,int dstH,enum AVPixelFormat dsfFormat,int flags,SwsFilter* srcFilter,SwsFilter* dstFilter,const double* param);
+#### 像素格式转换常用函数解析
+##### int sws_scale(struct SwsContext* c,const uint8_t* const srcSlice[],const int srcStride[],int srcSliceY,int srcSliceH,uint8_t* const dst[],const int dstStride[]);
+##### void sws_freeContext(struct SwsContext* swsContext); ->释放格式转换上下文
 ### 重采样
 ### pts/dts
 ### 同步策略

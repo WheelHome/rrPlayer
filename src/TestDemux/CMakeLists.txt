@@ -14,4 +14,5 @@ TARGET_LINK_LIBRARIES(
     avcodec
     avformat
     avutil
-    avdevice)
+    avdevice
+    pthread)
