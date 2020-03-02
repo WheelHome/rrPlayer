@@ -15,4 +15,6 @@ TARGET_LINK_LIBRARIES(
     avformat
     avutil
     avdevice
+    swresample
+    swscale
     pthread)

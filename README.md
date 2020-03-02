@@ -117,6 +117,28 @@ mp4(Part14)flv mov avi<br>box音视频信息(编码和格式关键帧索引)| h2
   - int av_frame_ref(AVFrame* dst,const AVFrame* src); ->对目标上下文引用计数加一
   - AVFrame* av_frame_clone(const AVFrame* src); ->拷贝源上下文
   - void av_frame_unref(AVFrame* frame); ->引用计数减一
+#### SwrContext 音频上下文
+- 接口函数
+    1. SwrContext* swr_alloc(); ->创建上下文
+    2. SwrContext* swr_alloc_set_opts(struct SwrContext* s,<br>int64_t out_ch_layout,AVSampleFormat out_sample_fmt,int out_sample_rate,//输出格式<br>int64_t in_ch_layout,AVSampleFormat in_sample_fmt,int in_sample_rate,<br>int log_offset,void* log_ctx //日志输出); ->设置上下文相关参数对应上下文
+   1. int swr_init(struct SwrContext* s); ->初始化上下文
+   2. void swr_free(struct SwrContext** s); ->释放上下文
+#### QAudioFormat
+- setSampleRate
+- setSampleSize ->比特数
+- setChannelCount
+- setCodec("audio/pcm")
+- setByteOrder(QAudioFormat::LittleEndian) ->设置字节存储模式
+- setSampleType(QAudioFormat::unSignedInt) ->设置样本类型
+#### QAudioOutput 音频输出类
+- QIODevice* start() ->启动输出
+- suspend() ->挂起输出
+- resume() ->恢复输出
+- bufferSize() ->缓冲区大小
+- bytesFree() ->已用缓冲区大小
+- periodSize() ->内部硬件一次读取多少数据量
+#### QIODevice io输出类
+- qint64 write(const char* data,qint64 len); ->向目的设备写入数据以及数据长度，返回实际写入的数据长度
 ### 解封装
 1. 打开接口函数
    - av_register_all() ->注册所有的封装格式(已经弃用，不需要再做相关操作)
@@ -168,6 +190,12 @@ mp4(Part14)flv mov avi<br>box音视频信息(编码和格式关键帧索引)| h2
 ##### int sws_scale(struct SwsContext* c,const uint8_t* const srcSlice[],const int srcStride[],int srcSliceY,int srcSliceH,uint8_t* const dst[],const int dstStride[]);
 ##### void sws_freeContext(struct SwsContext* swsContext); ->释放格式转换上下文
 ### 重采样
+####  int swr_convert(struct SwrContext* s,uint8_t** out,int out_count,const uint8_t** in ,int in_count); 音频重采样接口函数
+- struct SwrContext* s; ->音频上下文
+- uint8_t** out; ->输出数据
+- int out_count; ->输出通道数
+- const uint8_t** in; ->输入音频数据
+- int in_count; ->输入音频通道数
 ### pts/dts
 ### 同步策略
 ### sync

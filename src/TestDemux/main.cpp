@@ -5,6 +5,8 @@ extern "C"
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavdevice/avdevice.h>
+#include <libswresample/swresample.h>
+#include <libswscale/swscale.h>
 };
 
 static double r2d(AVRational& r)
@@ -143,8 +145,38 @@ int main()
     }
     std::cout << "audio avcodec_open2 " << path << " successed!" << std::endl;
 
+    //上下文准备
     AVPacket* pkt = av_packet_alloc(); //分配packet对象空间并初始化
-    AVFrame* frame = av_frame_alloc();
+    AVFrame* frame = av_frame_alloc();  //帧对象上下文
+
+    //视频像素转换
+    SwsContext *vctx = nullptr; //像素格式化上下文
+    unsigned char* rgb = nullptr;
+
+    //音频重采样
+    SwrContext *actx = swr_alloc();
+    actx = swr_alloc_set_opts(actx,
+                              av_get_default_channel_layout(2),//双声道输出格式
+                              AV_SAMPLE_FMT_S16,    //输出样本格式
+                              acc->sample_rate, //输出采样率
+                              av_get_default_channel_layout(acc->channels), //输入声道数
+                              acc->sample_fmt,  //输入样本格式
+                              acc->sample_rate, //输入样本率
+                              0,0
+                              );
+    if(actx)
+    {
+        re = swr_init(actx);
+        if(re != 0)
+        {
+            char buf[1024] = {};
+            av_strerror(re,buf,sizeof(buf) - 1);
+            std::cout << " swr_init failed!Error:" << buf << std::endl;
+            return -1;
+        }
+
+    }
+    unsigned char* pcm = nullptr;
 
     for(;;)
     {
@@ -166,7 +198,9 @@ int main()
         //转换为毫秒 方便做同步
         std::cout << "pkt->pts ms = " << pkt->pts * (r2d(ic->streams[pkt->stream_index]->time_base) * 1000) << std::endl;
 
-        AVCodecContext* cc = 0;
+        AVCodecContext* cc = 0; //解码器上下文
+
+
         if(pkt->stream_index == videoStream)
         {
             std::cout << "图像" << std::endl;
@@ -197,11 +231,63 @@ int main()
             if(re != 0)
                 break;
             std::cout << "Received frame " << frame->format << " " << frame->linesize[0] << std::endl;
+
+            //是视频输入流，就进行处理
+            if(cc == vcc)
+            {
+                //进行对应的像素格式转换 以适配能正常输出到屏幕进行显示
+                vctx = sws_getCachedContext(
+                            vctx,//传null会新创建
+                            frame->width,frame->height,(AVPixelFormat)frame->format,//输入的宽高和格式
+                            frame->width,frame->height,//输出的宽高
+                            AV_PIX_FMT_RGBA,//输出的格式
+                            SWS_BILINEAR,//尺寸变换 临近插值算法
+                            0,0,0
+                            );
+                //像素格式转换成功
+                if(vctx)
+                {
+                    if(!rgb)
+                        rgb = new unsigned char[frame->width * frame->height * 4];
+                    uint8_t* data[2] = {};
+                    data[0] = rgb;
+                    int lines[2] = {};
+                    lines[0] = frame->width * 4;
+                    re = sws_scale(vctx,
+                              frame->data,  //输入数据
+                              frame->linesize,  //输入行大小
+                              0,
+                              frame->height,    //输入高度
+                              data, //输出图像数据
+                              lines //输出图像每行的大小
+                              );
+                    std::cout << "sws_scale = " << re << std::endl;
+                }
+            }else
+            {
+                //音频处理
+                uint8_t* data[2] = {};
+                if(!pcm)
+                    pcm = new uint8_t[frame->nb_samples * 2 * 2];
+                data[0] = pcm;
+                frame->data;
+                re = swr_convert(actx,
+                            data,   //输出数据
+                            frame->nb_samples, //输出样本数
+                            (const uint8_t**)frame->data,    //输入数据
+                            frame->nb_samples   //输入样本数
+                            );
+                std::cout << "swr_convert = " << re << std::endl;
+
+            }
+
+
         }
 
         //Sleep(500);
     }
 
+    //上下文清理
     av_frame_free(&frame);
     av_packet_free(&pkt);
 
