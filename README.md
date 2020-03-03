@@ -199,3 +199,29 @@ mp4(Part14)flv mov avi<br>box音视频信息(编码和格式关键帧索引)| h2
 ### pts/dts
 ### 同步策略
 ### sync
+
+### Qt opengl编程
+#### QOpenGLWidget:与界面如何交互
+##### void paintGL();绘制函数
+##### void initializeGL();初始化函数
+##### void resizeGL(int width,int height);重设窗口大小
+##### QOpenGLFunctions:Qt编程中提供给用户使用的公有opengl类对象，继承可以使用opengl函数
+#### Programe GLSL 顶点和片元:如何与显卡交互
+##### QGLShaderProgram
+- 编译运行shader
+- addShaderFromSourceCode
+- bindAttributeLocation 设置传入的变量
+- uniformLocation 获取变量
+##### 着色器语言GLSL
+- 顶点着色器是针对每个顶点执行一次，用于确定顶点的位置；片元着色器是针对每个片元(像素)执行一次，用于确定每个片元(像素)的颜色
+- GLSL的基本语法与C基本相同
+- 完美支持向量和矩阵操作
+- 提供了大量的内置函数来提供丰富的扩展功能
+- 通过限定符操作来管理输入输出类型的
+- 三种GLSL变量类型
+  - varying 顶点与片元共享
+  - attribute 顶点使用，由bindAttributeLocation传入
+  - uniform 程序传入uniformLocation获取地址,由glUniform1i(textureUniformY,0);来进行设置
+#### 材质Texture:如何写入ffmpeg
+##### 1.创建材质
+##### 2.写入和绘制材质
