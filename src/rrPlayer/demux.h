@@ -10,6 +10,11 @@ class Demux
 public:
     //媒体总时长(毫秒)
     int totalMs = 0;
+    int width = 0;
+    int height = 0;
+    //音频参数
+    int sampleRate = 0;
+    int channels = 0;
 
     Demux();
     virtual ~Demux();

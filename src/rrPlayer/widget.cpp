@@ -13,3 +13,14 @@ Widget::~Widget()
     delete ui;
 }
 
+
+void Widget::Init(int width,int height)
+{
+    ui->video->Init(width,height);
+}
+
+
+VideoWidget* Widget::getVideoWidget()
+{
+    return ui->video;
+}

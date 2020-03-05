@@ -270,7 +270,6 @@ int main()
                 if(!pcm)
                     pcm = new uint8_t[frame->nb_samples * 2 * 2];
                 data[0] = pcm;
-                frame->data;
                 re = swr_convert(actx,
                             data,   //输出数据
                             frame->nb_samples, //输出样本数

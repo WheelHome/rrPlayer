@@ -59,11 +59,13 @@ bool Decode::Open(AVCodecParameters* para)
 //关闭解码器
 void Decode::Close()
 {
+    mux.lock();
     if(codec)
     {
         avcodec_close(codec);
         avcodec_free_context(&codec);
     }
+    mux.unlock();
 }
 
 //清理解码器

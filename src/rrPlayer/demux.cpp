@@ -68,6 +68,9 @@ bool Demux::Open(const char* url)
     //通过接口获取视频流信息
     videoStream = av_find_best_stream(ic,AVMEDIA_TYPE_VIDEO,-1,-1,nullptr,0);
     AVStream* as = ic->streams[videoStream];
+    this->width = as->codecpar->width;
+    this->height = as->codecpar->height;
+
     std::cout << "codec_id = " << as->codecpar->codec_id << std::endl;
     //视频
     std::cout << "videoInfo:" << std::endl;
@@ -81,6 +84,9 @@ bool Demux::Open(const char* url)
     //通过接口获取音频流信息
     audioStream = av_find_best_stream(ic,AVMEDIA_TYPE_AUDIO,-1,-1,nullptr,0);
     as = ic->streams[audioStream];
+    sampleRate = as->codecpar->sample_rate;
+    channels = as->codecpar->channels;
+
     //音频
     std::cout << "codec_id = " << as->codecpar->codec_id << std::endl;
     std::cout << "audioInfo:" << std::endl;
