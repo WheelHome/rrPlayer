@@ -10,6 +10,9 @@ class Decode
 {
 public:
     bool isAudio = false;
+    //当前解码到的pts
+    long long pts = 0;
+
     Decode();
     virtual ~Decode();
 

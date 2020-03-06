@@ -63,7 +63,7 @@ bool Demux::Open(const char* url)
     std::cout << "totalMs = " << totalMs << std::endl;
 
     //打印视频流详细信息
-    av_dump_format(ic,0,url,0);
+    //av_dump_format(ic,0,url,0);
 
     //通过接口获取视频流信息
     videoStream = av_find_best_stream(ic,AVMEDIA_TYPE_VIDEO,-1,-1,nullptr,0);
@@ -103,12 +103,11 @@ bool Demux::Open(const char* url)
 
 AVPacket* Demux::Read()
 {
-    mux.lock();
     if(!ic)
     {
-        mux.unlock();
         return nullptr;
     }
+    mux.lock();
     AVPacket* pkt = av_packet_alloc();
     //读取一帧，并分配对应空间
     int re = av_read_frame(ic,pkt);
@@ -122,7 +121,7 @@ AVPacket* Demux::Read()
     pkt->pts = pkt->pts * (1000 * (r2d(ic->streams[pkt->stream_index]->time_base)));
     pkt->dts = pkt->dts * (1000 * (r2d(ic->streams[pkt->stream_index]->time_base)));
     mux.unlock();
-    std::cout << pkt->pts << " ";
+    //std::cout << pkt->pts << " ";
     return pkt;
 }
 

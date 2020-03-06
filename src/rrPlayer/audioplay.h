@@ -18,7 +18,9 @@ public:
 
     //播放音频
     virtual bool Write(const unsigned char* data,int dataSize) = 0;
-    virtual int GetFree()= 0;
+    virtual int GetFree() = 0;
+    //返回缓冲中还没有播放的时间(ms)
+    virtual long long getNoPlayPts() = 0;
 };
 
 #endif // AUDIOPLAY_H

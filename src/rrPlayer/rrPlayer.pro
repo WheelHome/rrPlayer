@@ -17,18 +17,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     audioplay.cpp \
+    audiothread.cpp \
     decode.cpp \
     demux.cpp \
+    demuxthread.cpp \
     main.cpp \
     resample.cpp \
+    videothread.cpp \
     videowidget.cpp \
     widget.cpp
 
 HEADERS += \
     audioplay.h \
+    audiothread.h \
     decode.h \
     demux.h \
+    demuxthread.h \
     resample.h \
+    videocall.h \
+    videothread.h \
     videowidget.h \
     widget.h
 

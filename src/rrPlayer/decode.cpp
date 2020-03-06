@@ -38,7 +38,7 @@ bool Decode::Open(AVCodecParameters* para)
     avcodec_parameters_free(&para);
 
     //八线程解码
-    codec->thread_count = 8;
+    codec->thread_count = 1;
 
     //打开解码器上下文
     int re = avcodec_open2(codec,nullptr,nullptr);
@@ -48,11 +48,11 @@ bool Decode::Open(AVCodecParameters* para)
         mux.unlock();
         char buf[1024] = {};
         av_strerror(re,buf,sizeof(buf) - 1);
-        std::cout << "video avcodec_open2 failed!Error:" << buf << std::endl;
+        std::cout << "avcodec_open2 failed!Error:" << buf << std::endl;
         return false;
     }
     mux.unlock();
-    std::cout << "video avcodec_open2 successed!" << std::endl;
+    std::cout << "avcodec_open2 successed!" << std::endl;
     return true;
 }
 
@@ -65,6 +65,7 @@ void Decode::Close()
         avcodec_close(codec);
         avcodec_free_context(&codec);
     }
+    pts = 0;
     mux.unlock();
 }
 
@@ -118,5 +119,6 @@ AVFrame* Decode::Recv()
         return nullptr;
     }
     //std::cout << "[" << frame->linesize[0] << "] " << std::flush;
+    pts = frame->pts;
     return frame;
 }

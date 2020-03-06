@@ -10,6 +10,7 @@ public:
     virtual void Close();
     virtual bool Write(const unsigned char* data,int dataSize);
     virtual int GetFree();
+    virtual long long getNoPlayPts();
 private:
     QAudioOutput* output = nullptr;
     QIODevice* io = nullptr;
@@ -30,7 +31,7 @@ bool CAudioPlay::Open()
 
     mux.lock();
     output = new QAudioOutput(fmt);
-    output->setBufferSize(4096);
+    output->setBufferSize(49600);
     io = output->start();//开始播放
     mux.unlock();
     if(io)
@@ -60,11 +61,11 @@ bool CAudioPlay::Write(const unsigned char* data,int dataSize)
     if(!data || dataSize <= 0)
         return false;
 
+    mux.lock();
     if(!output || !io)
     {
         return false;
     }
-    mux.lock();
     int size = io->write((char*)data,dataSize);
     mux.unlock();
     if(dataSize != size)
@@ -74,14 +75,39 @@ bool CAudioPlay::Write(const unsigned char* data,int dataSize)
 
 int CAudioPlay::GetFree()
 {
+    mux.lock();
     if(!output)
     {
+        mux.unlock();
         return 0;
     }
-    mux.lock();
     int free = output->bytesFree();
     mux.unlock();
     return free;
+}
+
+long long CAudioPlay::getNoPlayPts()
+{
+    mux.lock();
+    if(!output)
+    {
+        mux.unlock();
+        return 0;
+    }
+    long long pts = 0;
+    //还未播放的字节数
+    double size = output->bufferSize() - output->bytesFree();
+    //一秒音频字节大小
+    double secSize = sampleRate * (sampleSize / 8) * channels;
+    if(secSize <= 0)
+    {
+        pts = 0;
+    }else
+    {
+        pts = (size / secSize) * 1000;
+    }
+    mux.unlock();
+    return pts;
 }
 
 AudioPlay::AudioPlay()

@@ -14,13 +14,13 @@ Resample::~Resample()
 }
 
 //输出参数和输入参数一致,除了采样格式,输出为S16
-bool Resample::Open(AVCodecParameters* para)
+bool Resample::Open(AVCodecParameters* para,bool isClearPara)
 {
     mux.lock();
     //音频重采样
-    //actx = swr_alloc();
+    actx = swr_alloc();
     actx = swr_alloc_set_opts(actx,
-                              av_get_default_channel_layout(2),//双声道输出格式
+                              av_get_default_channel_layout(para->channels),//双声道输出格式
                               (AVSampleFormat)outFormat,    //输出样本格式
                               para->sample_rate, //输出采样率
                               av_get_default_channel_layout(para->channels), //输入声道数
@@ -28,7 +28,8 @@ bool Resample::Open(AVCodecParameters* para)
                               para->sample_rate, //输入样本率
                               0,0
                               );
-    avcodec_parameters_free(&para);
+    if(isClearPara)
+        avcodec_parameters_free(&para);
     if(actx)
     {
         int re = swr_init(actx);

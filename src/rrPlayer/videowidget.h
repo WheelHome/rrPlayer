@@ -1,20 +1,20 @@
 #ifndef VIDEOWIDGET_H
 #define VIDEOWIDGET_H
-
+#include "videocall.h"
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QGLShaderProgram>
 #include <mutex>
 struct AVFrame;
-class VideoWidget : public QOpenGLWidget,protected QOpenGLFunctions
+class VideoWidget : public QOpenGLWidget,protected QOpenGLFunctions,public VideoCall
 {
     Q_OBJECT
 public:
     VideoWidget(QWidget* parent);
     ~VideoWidget();
-    void Init(int width,int height);
+    virtual void Init(int width,int height)override;
     //不管成功与否都释放frame空间
-    virtual void Repaint(AVFrame* frame);
+    virtual void Repaint(AVFrame* frame)override;
 protected:
     void paintGL() override;
     void initializeGL() override;

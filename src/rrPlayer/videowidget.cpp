@@ -59,16 +59,6 @@ void VideoWidget::paintGL()
 {
     mux.lock();
 
-    /*
-    if(feof(fp))
-    {
-        fseek(fp,0,SEEK_SET);
-    }
-
-    fread(data[0],1,width*height,fp);
-    fread(data[1],1,width*height/4,fp);
-    fread(data[2],1,width*height/4,fp);*/
-
     //0层绑定到材质Y
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,texs[0]);
@@ -94,7 +84,6 @@ void VideoWidget::paintGL()
     glUniform1i(unis[2],2);
 
     glDrawArrays(GL_TRIANGLE_STRIP,0,4);
-    qDebug() << "paintGL";
 
     mux.unlock();
 }
@@ -155,19 +144,6 @@ void VideoWidget::initializeGL()
     unis[2] = program.uniformLocation("tex_v");
 
     mux.unlock();
-
-    /*
-    fp = fopen("out240x128.yuv","rb");
-    if(!fp)
-    {
-        qDebug() << "out240x128.yuv file open error!";
-    }
-
-    //启动定时器
-    QTimer* ti = new QTimer(this);
-    connect(ti,SIGNAL(timeout()),this,SLOT(update()));
-    ti->start(40);*/
-
 }
 
 //窗口尺寸变化
@@ -247,6 +223,7 @@ void VideoWidget::Repaint(AVFrame* frame)
     //行对齐问题
 
     mux.unlock();
+    av_frame_free(&frame);
     //刷新显示
     update();
 }
