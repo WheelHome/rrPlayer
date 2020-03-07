@@ -16,6 +16,10 @@ public:
     //启动所有线程
     virtual void Start();
     virtual void run() override;
+    //关闭线程，清理资源
+    virtual void Close();
+    long long pts = 0;
+    long long totalMs = 0;
 protected:
     Demux* demux = nullptr;
     VideoThread* vt = nullptr;

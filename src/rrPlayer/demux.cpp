@@ -63,7 +63,7 @@ bool Demux::Open(const char* url)
     std::cout << "totalMs = " << totalMs << std::endl;
 
     //打印视频流详细信息
-    //av_dump_format(ic,0,url,0);
+    av_dump_format(ic,0,url,0);
 
     //通过接口获取视频流信息
     videoStream = av_find_best_stream(ic,AVMEDIA_TYPE_VIDEO,-1,-1,nullptr,0);

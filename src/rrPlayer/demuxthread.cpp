@@ -53,11 +53,13 @@ bool DemuxThread::Open(const char* url,VideoCall* call)
     }
 
     //打开音频解码器和处理线程
-    if(!at->Open(demux->CopyAPara(),demux->sampleRate*2,demux->channels))
+    if(!at->Open(demux->CopyAPara(),demux->sampleRate,demux->channels))
     {
         re = false;
         std::cout << "at->Open(demux->CopyAPara(),demux->sampleRate,demux->channels) failed!" << std::endl;
     }
+
+    totalMs = demux->totalMs;
     mux.unlock();
     if(re)
     {
@@ -69,6 +71,18 @@ bool DemuxThread::Open(const char* url,VideoCall* call)
 void DemuxThread::Start()
 {
     mux.lock();
+    if(!demux)
+    {
+        demux = new Demux();
+    }
+    if(!vt)
+    {
+        vt = new VideoThread();
+    }
+    if(!at)
+    {
+        at = new AudioThread();
+    }
     //启动当前线程
     QThread::start();
     if(vt)
@@ -93,6 +107,14 @@ void DemuxThread::run()
             msleep(5);
             continue;
         }
+
+        //音视频同步
+        if(vt && at)
+        {
+            vt->synpts = at->pts;
+            pts = at->pts;
+        }
+
         AVPacket* pkt = demux->Read();
         if(!pkt)
         {
@@ -114,6 +136,28 @@ void DemuxThread::run()
                 vt->Push(pkt);
             }
         }
+        mux.unlock();
+    }
+}
+
+void DemuxThread::Close()
+{
+    isExit = true;
+    wait();
+    if(vt)
+    {
+        vt->Close();
+        mux.lock();
+        delete vt;
+        vt = nullptr;
+        mux.unlock();
+    }
+    if(at)
+    {
+        at->Close();
+        mux.lock();
+        delete at;
+        at = nullptr;
         mux.unlock();
     }
 }

@@ -14,9 +14,19 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
-    void Init(int,int);
-    VideoWidget* getVideoWidget();
-//private:
+
+    //定时器 滑动条显示
+    void timerEvent(QTimerEvent* event)override;
+
+    //窗口尺寸变化
+    void resizeEvent(QResizeEvent *event) override;
+
+    //双击全屏
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+private:
     Ui::Widget *ui;
+public slots:
+    void OpenFile();
+//private:
 };
 #endif // WIDGET_H

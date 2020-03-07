@@ -7,8 +7,10 @@ int main(int argc, char *argv[])
     Widget w;
     w.show();
 
-    DemuxThread dt;
-    dt.Open("test.mp4",w.getVideoWidget());
-    dt.Start();
+    //DemuxThread dt;
+    //dt.Open("test.mp4",w.getVideoWidget());
+    //dt.Open("test1.mp4",w.getVideoWidget());
+    //dt.Open("rtmp://202.69.69.180:443/webcast/bshdlive-pc",w.getVideoWidget());
+    //dt.Start();
     return a.exec();
 }

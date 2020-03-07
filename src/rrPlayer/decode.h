@@ -6,6 +6,8 @@ struct AVCodecParameters;
 struct AVCodecContext;
 struct AVPacket;
 struct AVFrame;
+
+extern void FreePacket(AVPacket** pkt);
 class Decode
 {
 public:

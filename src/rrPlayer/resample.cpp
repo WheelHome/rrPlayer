@@ -18,8 +18,8 @@ bool Resample::Open(AVCodecParameters* para,bool isClearPara)
 {
     mux.lock();
     //音频重采样
-    actx = swr_alloc();
-    actx = swr_alloc_set_opts(actx,
+    //actx = swr_alloc();
+    actx = swr_alloc_set_opts(nullptr,
                               av_get_default_channel_layout(para->channels),//双声道输出格式
                               (AVSampleFormat)outFormat,    //输出样本格式
                               para->sample_rate, //输出采样率

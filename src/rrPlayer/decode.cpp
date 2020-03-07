@@ -3,6 +3,7 @@ extern "C"{
 #include <libavcodec/avcodec.h>
 }
 #include <iostream>
+
 Decode::Decode()
 {
 
@@ -121,4 +122,10 @@ AVFrame* Decode::Recv()
     //std::cout << "[" << frame->linesize[0] << "] " << std::flush;
     pts = frame->pts;
     return frame;
+}
+
+void FreePacket(AVPacket** pkt)
+{
+    if(pkt)
+        av_packet_free(pkt);
 }

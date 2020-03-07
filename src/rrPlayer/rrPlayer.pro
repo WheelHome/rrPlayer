@@ -19,6 +19,7 @@ SOURCES += \
     audioplay.cpp \
     audiothread.cpp \
     decode.cpp \
+    decodethread.cpp \
     demux.cpp \
     demuxthread.cpp \
     main.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     audioplay.h \
     audiothread.h \
     decode.h \
+    decodethread.h \
     demux.h \
     demuxthread.h \
     resample.h \

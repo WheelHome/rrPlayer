@@ -9,7 +9,7 @@ class Resample
 public:
     int outFormat = 1;//AV_SAMPLE_FMT_S16
     Resample();
-    ~Resample();
+    virtual ~Resample();
     //输出参数和输入参数一致,除了采样格式,输出为S16,会释放para
     virtual bool Open(AVCodecParameters* para,bool isClearPara = false);
     virtual void Close();
