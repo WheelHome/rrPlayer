@@ -24,6 +24,7 @@ SOURCES += \
     demuxthread.cpp \
     main.cpp \
     resample.cpp \
+    slider.cpp \
     videothread.cpp \
     videowidget.cpp \
     widget.cpp
@@ -36,6 +37,7 @@ HEADERS += \
     demux.h \
     demuxthread.h \
     resample.h \
+    slider.h \
     videocall.h \
     videothread.h \
     videowidget.h \

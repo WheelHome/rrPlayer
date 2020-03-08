@@ -15,6 +15,12 @@ void VideoThread::run()
     while(!isExit)
     {
         vmux.lock();
+        if(this->isPause)
+        {
+            vmux.unlock();
+            msleep(5);
+            continue;
+        }
         //音视频同步
         if(synpts > 0 && synpts < decode->pts)
         {
@@ -74,3 +80,38 @@ bool VideoThread::Open(AVCodecParameters* para,VideoCall* call,int width,int hei
     return re;
 }
 
+void VideoThread::SetPause(bool isPause)
+{
+    vmux.lock();
+    this->isPause = isPause;
+    vmux.unlock();
+}
+
+bool VideoThread::RepaintPts(AVPacket* pkt,long long seekPts)
+{
+    vmux.lock();
+    bool re = decode->Send(pkt);
+    if(!re)
+    {
+        vmux.unlock();
+        return true;
+    }
+    AVFrame* frame = decode->Recv();
+    if(!frame)
+    {
+        vmux.unlock();
+        return false;
+    }
+    if(decode->pts >= seekPts)
+    {
+        if(call)
+        {
+            call->Repaint(frame);
+        }
+        vmux.unlock();
+        return true;
+    }
+    FreeFrame(&frame);
+    vmux.unlock();
+    return false;
+}

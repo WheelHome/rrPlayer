@@ -2,8 +2,12 @@
 #include "demux.h"
 #include "videothread.h"
 #include "audiothread.h"
-
+#include "decode.h"
 #include <iostream>
+extern "C"
+{
+#include <libavformat/avformat.h>
+}
 DemuxThread::DemuxThread()
 {
 }
@@ -101,6 +105,12 @@ void DemuxThread::run()
     while (!isExit)
     {
         mux.lock();
+        if(isPause)
+        {
+            mux.unlock();
+            msleep(5);
+            continue;
+        }
         if(!demux)
         {
             mux.unlock();
@@ -160,4 +170,73 @@ void DemuxThread::Close()
         at = nullptr;
         mux.unlock();
     }
+}
+
+void DemuxThread::SetPause(bool isPause)
+{
+    mux.lock();
+    this->isPause = isPause;
+    if(at)
+    {
+        at->SetPause(isPause);
+    }
+    if(vt)
+    {
+        vt->SetPause(isPause);
+    }
+    mux.unlock();
+}
+
+void DemuxThread::Seek(double pos)
+{
+    //清理缓存
+    Clear();
+
+    mux.lock();
+    bool status = this->isPause;
+    mux.unlock();
+    //暂停
+    SetPause(true);
+    mux.lock();
+    if(demux)
+    {
+        demux->Seek(pos);
+    }
+    //实际要显示的位置pts
+    long long seekPos = pos * demux->totalMs;
+    while(!isExit)
+    {
+        AVPacket* pkt = demux->ReadVideo();
+        if(!pkt)
+        {
+            break;
+        }
+        //如果解码到seekPos
+        if(vt->RepaintPts(pkt,seekPos))
+        {
+            this->pts = seekPos;
+            break;
+        }
+    }
+    mux.unlock();
+    if(!status)
+        SetPause(false);
+}
+
+void DemuxThread::Clear()
+{
+    mux.lock();
+    if(demux)
+    {
+        demux->Clear();
+    }
+    if(vt)
+    {
+        vt->Clear();
+    }
+    if(at)
+    {
+        at->Clear();
+    }
+    mux.unlock();
 }

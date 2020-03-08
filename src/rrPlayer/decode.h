@@ -8,6 +8,7 @@ struct AVPacket;
 struct AVFrame;
 
 extern void FreePacket(AVPacket** pkt);
+extern void FreeFrame(AVFrame** pkt);
 class Decode
 {
 public:

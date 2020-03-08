@@ -22,6 +22,10 @@ Widget::~Widget()
 
 void Widget::timerEvent(QTimerEvent* event)
 {
+    if(isSliderPress)
+    {
+        return;
+    }
     long long total = dt.totalMs;
     if(dt.totalMs > 0)
     {
@@ -36,6 +40,7 @@ void Widget::resizeEvent(QResizeEvent *event)
     ui->playPos->move(100,this->height()-100);
     ui->playPos->resize(this->width()-200,ui->playPos->height());
     ui->openFileButton->move(this->width()/2-50,this->height()-150);
+    ui->isPlay->move(ui->openFileButton->x() + ui->openFileButton->width(),ui->openFileButton->y());
     ui->video->resize(this->size());
 }
 
@@ -49,6 +54,18 @@ void Widget::mouseDoubleClickEvent(QMouseEvent *event)
         this->showFullScreen();
     }
 }
+
+void Widget::SetPause(bool isPause)
+{
+    if(isPause)
+    {
+        ui->isPlay->setText("播放");
+    }else
+    {
+        ui->isPlay->setText("暂停");
+    }
+}
+
 void Widget::OpenFile()
 {
     //选择文件
@@ -65,4 +82,25 @@ void Widget::OpenFile()
     }
     //打开文件
     qDebug() << name;
+    SetPause(dt.isPause);
+}
+
+void Widget::PlayOrPause()
+{
+    bool isPause = !dt.isPause;
+    SetPause(isPause);
+    dt.SetPause(isPause);
+}
+
+void Widget::SliderPress()
+{
+    isSliderPress = true;
+}
+
+void Widget::SliderRelease()
+{
+    isSliderPress = false;
+    double pos = 0.0;
+    pos = ui->playPos->value() / (double)ui->playPos->maximum();
+    dt.Seek(pos);
 }

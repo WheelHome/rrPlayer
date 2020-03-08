@@ -18,8 +18,12 @@ public:
     virtual void run() override;
     //关闭线程，清理资源
     virtual void Close();
+    virtual void Clear();
+    virtual void Seek(double pos);
+    void SetPause(bool isPause);
     long long pts = 0;
     long long totalMs = 0;
+    bool isPause = false;
 protected:
     Demux* demux = nullptr;
     VideoThread* vt = nullptr;

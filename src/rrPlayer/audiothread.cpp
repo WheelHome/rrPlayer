@@ -4,6 +4,9 @@
 #include "resample.h"
 
 #include <iostream>
+extern "C"{
+#include <libavformat/avformat.h>
+}
 AudioThread::AudioThread()
 {
     if(!res)
@@ -29,6 +32,12 @@ void AudioThread::run()
     while(!isExit)
     {
         amux.lock();
+        if(isPause)
+        {
+            amux.unlock();
+            msleep(5);
+            continue;
+        }
         AVPacket* pkt = Pop();
         bool re = decode->Send(pkt);
         if(!re)
@@ -57,7 +66,7 @@ void AudioThread::run()
                     break;
                 }
                 //缓冲未播完,空间不够
-                if(ap->GetFree() < size)
+                if(ap->GetFree() < size || isPause)
                 {
                     msleep(1);
                     continue;
@@ -104,6 +113,17 @@ bool AudioThread::Open(AVCodecParameters* para,int sampleRate,int channels)
     return re;
 }
 
+void AudioThread::Clear()
+{
+    DecodeThread::Clear();
+    mux.lock();
+    if(ap)
+    {
+        ap->Clear();
+    }
+    mux.unlock();
+}
+
 void AudioThread::Close()
 {
     DecodeThread::Close();
@@ -122,4 +142,15 @@ void AudioThread::Close()
         ap = nullptr;
         amux.unlock();
     }
+}
+
+void AudioThread::SetPause(bool isPause)
+{
+    //amux.lock();
+    this->isPause = isPause;
+    if(ap)
+    {
+        ap->SetPos(isPause);
+    }
+    //amux.unlock();
 }

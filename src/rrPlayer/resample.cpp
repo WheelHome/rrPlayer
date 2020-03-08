@@ -18,7 +18,7 @@ bool Resample::Open(AVCodecParameters* para,bool isClearPara)
 {
     mux.lock();
     //音频重采样
-    //actx = swr_alloc();
+    actx = swr_alloc();
     actx = swr_alloc_set_opts(nullptr,
                               av_get_default_channel_layout(para->channels),//双声道输出格式
                               (AVSampleFormat)outFormat,    //输出样本格式
@@ -29,21 +29,16 @@ bool Resample::Open(AVCodecParameters* para,bool isClearPara)
                               0,0
                               );
     if(isClearPara)
-        avcodec_parameters_free(&para);
-    if(actx)
-    {
-        int re = swr_init(actx);
-        mux.unlock();
-        if(re != 0)
-        {
-            char buf[1024] = {};
-            av_strerror(re,buf,sizeof(buf) - 1);
-            std::cout << " swr_init failed!Error:" << buf << std::endl;
-            return -1;
-        }
-    }else
+    avcodec_parameters_free(&para);
+    int re = swr_init(actx);
+    mux.unlock();
+    if(re != 0)
     {
         mux.unlock();
+        char buf[1024] = {};
+        av_strerror(re,buf,sizeof(buf) - 1);
+        std::cout << " swr_init failed!Error:" << buf << std::endl;
+        return -1;
     }
     //unsigned char* pcm = nullptr;
     return true;

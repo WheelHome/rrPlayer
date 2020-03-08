@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <QMainWindow>
 #include "videowidget.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -23,10 +24,15 @@ public:
 
     //双击全屏
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void SetPause(bool isPause);
 private:
     Ui::Widget *ui;
+    bool isSliderPress = false;
 public slots:
     void OpenFile();
+    void PlayOrPause();
+    void SliderPress();
+    void SliderRelease();
 //private:
 };
 #endif // WIDGET_H

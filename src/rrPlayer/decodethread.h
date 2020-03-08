@@ -8,6 +8,7 @@ class Decode;
 class DecodeThread : public QThread
 {
 public:
+
     DecodeThread();
     ~DecodeThread();
     virtual void Push(AVPacket* pkt);

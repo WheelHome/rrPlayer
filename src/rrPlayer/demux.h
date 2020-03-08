@@ -23,6 +23,8 @@ public:
 
     //空间需要调用者释放,释放AVPacket对象空间和数据av_packet_free空间
     virtual AVPacket* Read();
+    //只读视频帧，音频帧丢弃
+    virtual AVPacket* ReadVideo();
 
     //获取视频参数 返回的空间需要清理 avcodec_parameters_free
     virtual AVCodecParameters* CopyVPara();

@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     QAudioFormat fmt;
-    fmt.setSampleRate(48000);
+    fmt.setSampleRate(44100);
     fmt.setSampleSize(8);
     fmt.setChannelCount(2);
     fmt.setCodec("audio/pcm");

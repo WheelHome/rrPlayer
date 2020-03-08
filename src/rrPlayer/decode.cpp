@@ -39,7 +39,7 @@ bool Decode::Open(AVCodecParameters* para)
     avcodec_parameters_free(&para);
 
     //八线程解码
-    codec->thread_count = 1;
+    codec->thread_count = 8;
 
     //打开解码器上下文
     int re = avcodec_open2(codec,nullptr,nullptr);
@@ -128,4 +128,10 @@ void FreePacket(AVPacket** pkt)
 {
     if(pkt)
         av_packet_free(pkt);
+}
+
+void FreeFrame(AVFrame** pkt)
+{
+    if(pkt)
+        av_frame_free(pkt);
 }

@@ -16,6 +16,9 @@ public:
     virtual bool Open(AVCodecParameters* para,int sampleRate,int channels);
     //停止线程，清理资源
     virtual void Close()override;
+    virtual void Clear() override;
+    void SetPause(bool isPause);
+    bool isPause = false;
 protected:
     AudioPlay* ap = nullptr;
     Resample* res = nullptr;

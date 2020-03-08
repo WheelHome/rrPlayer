@@ -8,9 +8,11 @@ class CAudioPlay : public AudioPlay
 public:
     virtual bool Open();
     virtual void Close();
+    virtual void Clear();
     virtual bool Write(const unsigned char* data,int dataSize);
     virtual int GetFree();
     virtual long long getNoPlayPts();
+    virtual void SetPos(bool isPause);
 private:
     QAudioOutput* output = nullptr;
     QIODevice* io = nullptr;
@@ -31,12 +33,24 @@ bool CAudioPlay::Open()
 
     mux.lock();
     output = new QAudioOutput(fmt);
-    output->setBufferSize(49600);
+    output->setBufferSize(28800);
     io = output->start();//开始播放
     mux.unlock();
     if(io)
         return true;
     return false;
+}
+
+void CAudioPlay::Clear()
+{
+    mux.lock();
+    if(io)
+    {
+        io->reset();
+        io = nullptr;
+    }
+    mux.unlock();
+
 }
 
 void CAudioPlay::Close()
@@ -110,8 +124,27 @@ long long CAudioPlay::getNoPlayPts()
     return pts;
 }
 
+void CAudioPlay::SetPos(bool isPause)
+{
+    mux.lock();
+    if(!output)
+    {
+        mux.unlock();
+        return;
+    }
+    if(isPause)
+    {
+        output->suspend();
+    }else
+    {
+        output->resume();
+    }
+    mux.unlock();
+}
+
 AudioPlay::AudioPlay()
 {
+
 }
 
 AudioPlay::~AudioPlay()
