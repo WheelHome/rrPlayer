@@ -1,4 +1,5 @@
 #include "audioplay.h"
+#include "mydevice.h"
 #include <QAudioFormat>
 #include <QAudioOutput>
 #include <mutex>
@@ -15,7 +16,7 @@ public:
     virtual void SetPos(bool isPause);
 private:
     QAudioOutput* output = nullptr;
-    QIODevice* io = nullptr;
+    MyDevice* io = nullptr;
     std::mutex mux;
 };
 
@@ -34,7 +35,7 @@ bool CAudioPlay::Open()
     mux.lock();
     output = new QAudioOutput(fmt);
     output->setBufferSize(28800);
-    io = output->start();//开始播放
+    io = (MyDevice*)output->start();//开始播放
     mux.unlock();
     if(io)
         return true;
@@ -47,7 +48,7 @@ void CAudioPlay::Clear()
     if(io)
     {
         io->reset();
-        io = nullptr;
+        //io = nullptr;
     }
     mux.unlock();
 
@@ -78,6 +79,7 @@ bool CAudioPlay::Write(const unsigned char* data,int dataSize)
     mux.lock();
     if(!output || !io)
     {
+        mux.unlock();
         return false;
     }
     int size = io->write((char*)data,dataSize);

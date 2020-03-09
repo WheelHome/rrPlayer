@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     QAudioFormat fmt;
-    fmt.setSampleRate(44100);
+    fmt.setSampleRate(48000);
     fmt.setSampleSize(8);
     fmt.setChannelCount(2);
     fmt.setCodec("audio/pcm");
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     {
         if (out->bytesFree() < size)
         {
-            QThread::msleep(1);
+            QThread::msleep(20);
             continue;
         }
         int len = fread(buf,1,size,fp);

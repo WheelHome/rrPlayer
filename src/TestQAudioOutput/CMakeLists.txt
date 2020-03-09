@@ -20,4 +20,12 @@ add_executable(TestQAudioOutput main.cpp
 target_link_libraries(
     TestQAudioOutput
     Qt5::Core
-    Qt5::Multimedia)
+    Qt5::Multimedia
+    avcodec
+    avformat
+    avutil
+    avdevice
+    swresample
+    swscale
+    pthread)
+

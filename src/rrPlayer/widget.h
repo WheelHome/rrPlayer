@@ -28,6 +28,7 @@ public:
 private:
     Ui::Widget *ui;
     bool isSliderPress = false;
+    int timer = -1;
 public slots:
     void OpenFile();
     void PlayOrPause();

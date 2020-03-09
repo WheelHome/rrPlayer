@@ -34,7 +34,6 @@ bool Resample::Open(AVCodecParameters* para,bool isClearPara)
     mux.unlock();
     if(re != 0)
     {
-        mux.unlock();
         char buf[1024] = {};
         av_strerror(re,buf,sizeof(buf) - 1);
         std::cout << " swr_init failed!Error:" << buf << std::endl;
@@ -52,7 +51,7 @@ void Resample::Close()
     mux.unlock();
 }
 
-int Resample::AudioResample(AVFrame* indata,unsigned char* d)
+int Resample::AudioResample(AVFrame* indata,uint8_t* d)
 {
     if(!indata)
         return 0;

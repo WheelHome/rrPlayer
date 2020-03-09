@@ -23,6 +23,7 @@ SOURCES += \
     demux.cpp \
     demuxthread.cpp \
     main.cpp \
+    mydevice.cpp \
     resample.cpp \
     slider.cpp \
     videothread.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     decodethread.h \
     demux.h \
     demuxthread.h \
+    mydevice.h \
     resample.h \
     slider.h \
     videocall.h \
@@ -52,4 +54,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 linux{
     LIBS += -L/opt/ffmpeg/lib -lavcodec -lavutil -lswresample -lavformat -lavdevice -lswscale
+    LIBS += -L/usr/local/lib -lSDL2
 }

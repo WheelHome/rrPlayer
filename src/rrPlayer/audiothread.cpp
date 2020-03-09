@@ -29,6 +29,7 @@ AudioThread::~AudioThread()
 void AudioThread::run()
 {
     unsigned char* pcm = new unsigned char[1024*1024*10];
+    bzero(pcm,sizeof(pcm));
     while(!isExit)
     {
         amux.lock();
@@ -66,7 +67,7 @@ void AudioThread::run()
                     break;
                 }
                 //缓冲未播完,空间不够
-                if(ap->GetFree() < size || isPause)
+                if(ap->GetFree() <= size || isPause)
                 {
                     msleep(1);
                     continue;

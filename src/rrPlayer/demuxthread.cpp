@@ -57,7 +57,7 @@ bool DemuxThread::Open(const char* url,VideoCall* call)
     }
 
     //打开音频解码器和处理线程
-    if(!at->Open(demux->CopyAPara(),demux->sampleRate,demux->channels))
+    if(!at->Open(demux->CopyAPara(),demux->sampleRate*2,demux->channels))
     {
         re = false;
         std::cout << "at->Open(demux->CopyAPara(),demux->sampleRate,demux->channels) failed!" << std::endl;
