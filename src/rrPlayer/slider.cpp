@@ -12,9 +12,9 @@ Slider::~Slider()
 
 void Slider::mousePressEvent(QMouseEvent *event)
 {
-    double pos = event->x() / (double)width();
+    double pos = (double)event->x() / (double)width();
     setValue(pos * this->maximum());
     //原有事件处理
-    //QSlider::mousePressEvent(event);
     QSlider::sliderReleased();
+    //QSlider::mousePressEvent(event);
 }

@@ -1,13 +1,17 @@
 #include "audioplay.h"
-#include "mydevice.h"
 #include <QAudioFormat>
 #include <QAudioOutput>
 #include <mutex>
 #include <QDebug>
+
+extern "C"{
+#include <SDL2/SDL.h>
+}
+
 class CAudioPlay : public AudioPlay
 {
 public:
-    virtual bool Open();
+    virtual bool Open(int format);
     virtual void Close();
     virtual void Clear();
     virtual bool Write(const unsigned char* data,int dataSize);
@@ -15,104 +19,92 @@ public:
     virtual long long getNoPlayPts();
     virtual void SetPos(bool isPause);
 private:
-    QAudioOutput* output = nullptr;
-    MyDevice* io = nullptr;
     std::mutex mux;
 };
 
-bool CAudioPlay::Open()
+
+static Uint8 *audio_chunk;
+static Uint32 audio_len;
+static Uint8 *audio_pos;
+
+void read_audio_data(void *udata, Uint8 *stream, int len)
 {
-    Close();
-    QAudioFormat fmt;
-    fmt.setSampleRate(sampleRate);
-    fmt.setSampleSize(sampleSize);
-    fmt.setChannelCount(channels);
-    fmt.setCodec("audio/pcm");
-    fmt.setByteOrder(QAudioFormat::LittleEndian);
-    fmt.setSampleType(QAudioFormat::UnSignedInt);
+    SDL_memset(stream, 0, len);
+    if (audio_len == 0)
+        return;
+    len = (len > audio_len ? audio_len : len);
 
+    SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
+    audio_pos += len;
+    audio_len -= len;
+}
 
+bool CAudioPlay::Open(int format)
+{
     mux.lock();
-    output = new QAudioOutput(fmt);
-    output->setBufferSize(28800);
-    io = (MyDevice*)output->start();//开始播放
+    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
+        mux.unlock();
+        printf("Could not initialize SDL - %s\n", SDL_GetError());
+        return false;
+    }
+    SDL_AudioSpec spec;
+    spec.freq = sampleRate;//根据你录制的PCM采样率决定
+    spec.format = AUDIO_S16SYS;
+    spec.channels = channels;
+    spec.silence = 0;
+    spec.samples = 1024;
+    spec.callback = read_audio_data;
+    spec.userdata = NULL;
+
+    if (SDL_OpenAudio(&spec, NULL) < 0) {
+        mux.unlock();
+        printf("%s\n",SDL_GetError());
+        printf("can't open audio.\n");
+        return false;
+    }
+    //播放
+    SDL_PauseAudio(0);
     mux.unlock();
-    if(io)
-        return true;
-    return false;
+    return true;
 }
 
 void CAudioPlay::Clear()
 {
     mux.lock();
-    if(io)
-    {
-        io->reset();
-        //io = nullptr;
-    }
+    SDL_PauseAudio(1);
     mux.unlock();
-
 }
 
 void CAudioPlay::Close()
 {
     mux.lock();
-    if(io)
-    {
-        io->close();
-        io = nullptr;
-    }
-    if(output)
-    {
-        output->stop();
-        delete output;
-        output = nullptr;
-    }
+    SDL_CloseAudio();
     mux.unlock();
 }
 
 bool CAudioPlay::Write(const unsigned char* data,int dataSize)
 {
-    if(!data || dataSize <= 0)
-        return false;
-
     mux.lock();
-    if(!output || !io)
-    {
-        mux.unlock();
-        return false;
-    }
-    int size = io->write((char*)data,dataSize);
+    audio_chunk = (Uint8*)data;
+    audio_len = dataSize;
+    audio_pos = audio_chunk;
     mux.unlock();
-    if(dataSize != size)
-        return false;
-    return true;
 }
 
 int CAudioPlay::GetFree()
 {
     mux.lock();
-    if(!output)
-    {
-        mux.unlock();
-        return 0;
-    }
-    int free = output->bytesFree();
+    int len = audio_len;
     mux.unlock();
-    return free;
+    return len;
 }
 
 long long CAudioPlay::getNoPlayPts()
 {
     mux.lock();
-    if(!output)
-    {
-        mux.unlock();
-        return 0;
-    }
     long long pts = 0;
     //还未播放的字节数
-    double size = output->bufferSize() - output->bytesFree();
+    double size = audio_len;
     //一秒音频字节大小
     double secSize = sampleRate * (sampleSize / 8) * channels;
     if(secSize <= 0)
@@ -129,17 +121,12 @@ long long CAudioPlay::getNoPlayPts()
 void CAudioPlay::SetPos(bool isPause)
 {
     mux.lock();
-    if(!output)
-    {
-        mux.unlock();
-        return;
-    }
     if(isPause)
     {
-        output->suspend();
+        SDL_PauseAudio(1);
     }else
     {
-        output->resume();
+        SDL_PauseAudio(0);
     }
     mux.unlock();
 }
@@ -151,7 +138,7 @@ AudioPlay::AudioPlay()
 
 AudioPlay::~AudioPlay()
 {
-
+    SDL_Quit();
 }
 
 AudioPlay* AudioPlay::GetInstance()

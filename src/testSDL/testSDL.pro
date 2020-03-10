@@ -1,8 +1,7 @@
-QT       += core gui opengl multimedia
+QT -= gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
-CONFIG += c++11
+CONFIG += c++11 console
+CONFIG -= app_bundle
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -16,41 +15,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    audioplay.cpp \
-    audiothread.cpp \
-    decode.cpp \
-    decodethread.cpp \
-    demux.cpp \
-    demuxthread.cpp \
-    main.cpp \
-    resample.cpp \
-    slider.cpp \
-    videothread.cpp \
-    videowidget.cpp \
-    widget.cpp
-
-HEADERS += \
-    audioplay.h \
-    audiothread.h \
-    decode.h \
-    decodethread.h \
-    demux.h \
-    demuxthread.h \
-    resample.h \
-    slider.h \
-    videocall.h \
-    videothread.h \
-    videowidget.h \
-    widget.h
-
-FORMS += \
-    widget.ui
+        main.cpp \
+        sdlaudio.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
 linux{
-    LIBS += -L/opt/ffmpeg/lib -lavcodec -lavutil -lswresample -lavformat -lavdevice -lswscale
     LIBS += -L/usr/local/lib -lSDL2
 }
+
+HEADERS += \
+    sdlaudio.h

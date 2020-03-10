@@ -29,7 +29,6 @@ AudioThread::~AudioThread()
 void AudioThread::run()
 {
     unsigned char* pcm = new unsigned char[1024*1024*10];
-    bzero(pcm,sizeof(pcm));
     while(!isExit)
     {
         amux.lock();
@@ -60,14 +59,16 @@ void AudioThread::run()
             //重采样
             int size = res->AudioResample(frame,pcm);
             //播放音频
+
             while(!isExit)
             {
                 if(size <= 0)
                 {
                     break;
                 }
+
                 //缓冲未播完,空间不够
-                if(ap->GetFree() <= size || isPause)
+                if(ap->GetFree() > 0 || isPause)
                 {
                     msleep(1);
                     continue;
@@ -95,7 +96,7 @@ bool AudioThread::Open(AVCodecParameters* para,int sampleRate,int channels)
     }
     ap->sampleRate = sampleRate;
     ap->channels = channels;
-    if(!ap->Open())
+    if(!ap->Open(res->outFormat))
     {
         re = false;
         std::cout << "AudioPlay open filed!" << std::endl;

@@ -3,6 +3,7 @@
 #include "demuxthread.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <iostream>
 static DemuxThread dt;
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -101,6 +102,6 @@ void Widget::SliderRelease()
 {
     isSliderPress = false;
     double pos = 0.0;
-    pos = ui->playPos->value() / (double)ui->playPos->maximum();
+    pos = (double)ui->playPos->value() / (double)ui->playPos->maximum();
     dt.Seek(pos);
 }
