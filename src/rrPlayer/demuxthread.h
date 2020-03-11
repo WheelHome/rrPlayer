@@ -20,6 +20,7 @@ public:
     virtual void Close();
     virtual void Clear();
     virtual void Seek(double pos);
+    virtual void setVolume(int pos);
     void SetPause(bool isPause);
     long long pts = 0;
     long long totalMs = 0;

@@ -24,10 +24,10 @@ SOURCES += \
     demuxthread.cpp \
     main.cpp \
     resample.cpp \
+    rrplayer.cpp \
     slider.cpp \
     videothread.cpp \
-    videowidget.cpp \
-    widget.cpp
+    videowidget.cpp
 
 HEADERS += \
     audioplay.h \
@@ -37,14 +37,14 @@ HEADERS += \
     demux.h \
     demuxthread.h \
     resample.h \
+    rrplayer.h \
     slider.h \
     videocall.h \
     videothread.h \
-    videowidget.h \
-    widget.h
+    videowidget.h
 
 FORMS += \
-    widget.ui
+    rrplayer.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

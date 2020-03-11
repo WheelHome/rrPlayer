@@ -156,3 +156,8 @@ void AudioThread::SetPause(bool isPause)
     }
     //amux.unlock();
 }
+
+void AudioThread::setVolume(int pos)
+{
+    ap->setVolume(pos);
+}

@@ -200,7 +200,6 @@ void VideoWidget::Init(int width,int height)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     //创建材质显存空间
     glTexImage2D(GL_TEXTURE_2D,0,GL_RED,width/2,height/2,0,GL_RED,GL_UNSIGNED_BYTE,0);
-
     mux.unlock();
 
 }

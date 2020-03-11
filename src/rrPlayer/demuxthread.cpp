@@ -174,7 +174,7 @@ void DemuxThread::Close()
 
 void DemuxThread::SetPause(bool isPause)
 {
-    mux.lock();
+    //mux.lock();
     this->isPause = isPause;
     if(at)
     {
@@ -184,7 +184,7 @@ void DemuxThread::SetPause(bool isPause)
     {
         vt->SetPause(isPause);
     }
-    mux.unlock();
+    //mux.unlock();
 }
 
 void DemuxThread::Seek(double pos)
@@ -239,4 +239,9 @@ void DemuxThread::Clear()
         at->Clear();
     }
     mux.unlock();
+}
+
+void DemuxThread::setVolume(int pos)
+{
+    at->setVolume(pos);
 }

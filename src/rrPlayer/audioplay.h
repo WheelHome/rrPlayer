@@ -24,6 +24,7 @@ public:
     virtual long long getNoPlayPts() = 0;
 
     virtual void SetPos(bool isPause) = 0;
+    virtual void setVolume(int pos) = 0;
 };
 
 #endif // AUDIOPLAY_H

@@ -18,6 +18,7 @@ public:
     virtual int GetFree();
     virtual long long getNoPlayPts();
     virtual void SetPos(bool isPause);
+    virtual void setVolume(int pos);
 private:
     std::mutex mux;
 };
@@ -26,6 +27,7 @@ private:
 static Uint8 *audio_chunk;
 static Uint32 audio_len;
 static Uint8 *audio_pos;
+static int vol = 128;
 
 void read_audio_data(void *udata, Uint8 *stream, int len)
 {
@@ -34,13 +36,16 @@ void read_audio_data(void *udata, Uint8 *stream, int len)
         return;
     len = (len > audio_len ? audio_len : len);
 
-    SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
+    SDL_MixAudio(stream, audio_pos, len, *(int*)udata);
     audio_pos += len;
     audio_len -= len;
+    //qDebug() << *(int*)udata ;
 }
 
 bool CAudioPlay::Open(int format)
 {
+    //SDL_PauseAudio(1);
+    static bool first = true;
     mux.lock();
     if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
         mux.unlock();
@@ -54,13 +59,16 @@ bool CAudioPlay::Open(int format)
     spec.silence = 0;
     spec.samples = 1024;
     spec.callback = read_audio_data;
-    spec.userdata = NULL;
+    spec.userdata = &vol;
 
-    if (SDL_OpenAudio(&spec, NULL) < 0) {
+    if (SDL_OpenAudio(&spec, NULL) < 0 && first) {
         mux.unlock();
         printf("%s\n",SDL_GetError());
         printf("can't open audio.\n");
         return false;
+    }else
+    {
+        first = false;
     }
     //播放
     SDL_PauseAudio(0);
@@ -70,9 +78,6 @@ bool CAudioPlay::Open(int format)
 
 void CAudioPlay::Clear()
 {
-    mux.lock();
-    SDL_PauseAudio(1);
-    mux.unlock();
 }
 
 void CAudioPlay::Close()
@@ -93,10 +98,7 @@ bool CAudioPlay::Write(const unsigned char* data,int dataSize)
 
 int CAudioPlay::GetFree()
 {
-    mux.lock();
-    int len = audio_len;
-    mux.unlock();
-    return len;
+    return audio_len;
 }
 
 long long CAudioPlay::getNoPlayPts()
@@ -128,6 +130,13 @@ void CAudioPlay::SetPos(bool isPause)
     {
         SDL_PauseAudio(0);
     }
+    mux.unlock();
+}
+
+void CAudioPlay::setVolume(int pos)
+{
+    mux.lock();
+    vol = pos;
     mux.unlock();
 }
 

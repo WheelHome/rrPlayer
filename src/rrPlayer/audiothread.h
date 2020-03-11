@@ -18,6 +18,7 @@ public:
     virtual void Close()override;
     virtual void Clear() override;
     void SetPause(bool isPause);
+    virtual void setVolume(int pos);
     bool isPause = false;
 protected:
     AudioPlay* ap = nullptr;

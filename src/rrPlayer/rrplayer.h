@@ -1,20 +1,21 @@
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef RRPLAYER_H
+#define RRPLAYER_H
 
-#include <QWidget>
 #include <QMainWindow>
-#include "videowidget.h"
-QT_BEGIN_NAMESPACE
-namespace Ui { class Widget; }
-QT_END_NAMESPACE
 
-class Widget : public QWidget
+namespace Ui {
+class rrPlayer;
+}
+
+class Slider;
+class QPushButton;
+class rrPlayer : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    Widget(QWidget *parent = nullptr);
-    ~Widget();
+    explicit rrPlayer(QWidget *parent = nullptr);
+    ~rrPlayer();
 
     //定时器 滑动条显示
     void timerEvent(QTimerEvent* event)override;
@@ -25,15 +26,21 @@ public:
     //双击全屏
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void SetPause(bool isPause);
-private:
-    Ui::Widget *ui;
-    bool isSliderPress = false;
-    int timer = -1;
+
 public slots:
     void OpenFile();
     void PlayOrPause();
     void SliderPress();
     void SliderRelease();
-//private:
+    void volumeSliderRelease();
+    void volumeSliderPress();
+private:
+    Ui::rrPlayer *ui;
+    bool isSliderPress = false;
+    Slider* proSlider;
+    Slider* volSlider;
+    QPushButton* isPlay;
+
 };
-#endif // WIDGET_H
+
+#endif // RRPLAYER_H
